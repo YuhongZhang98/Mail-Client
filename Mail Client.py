@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request
 from socket import *
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 app = Flask(__name__)
 
 @app.route('/')
@@ -10,7 +13,9 @@ def home():
 def send():
     sender = request.form['Sender']
     receiver = request.form['Receiver']
+    subject = "Subject: " + request.form['Subject'] + "\n"
     msg = "\r\n" + request.form['Content']
+    file = request.form['File']
     endmsg = '\r\n.\r\n'
     mailserver = 'smtp.nyu.edu'
     serverport = 25
@@ -56,7 +61,16 @@ def send():
         print('354 reply not received from server')
 
     # Send message data.
-    clientSocket.send(msg.encode())
+    if(file != ''):
+        a = MIMEMultipart()
+        a['subject'] = request.form['Subject']
+        with open(file, 'rb') as fp:
+            img = MIMEImage(fp.read())
+        a.attach(img)
+        body = MIMEText(msg, "plain")
+        a.attach(body)
+        clientSocket.send(a.as_string().encode())
+    clientSocket.send((subject + msg).encode())
 
     # Message ends with a single period.
     clientSocket.send(endmsg.encode())
