@@ -90,4 +90,3 @@ def send():
     return "<h1>The email has been sent to " + receiver + "</h1>"
 if __name__ == '__main__':
     app.run()
-
